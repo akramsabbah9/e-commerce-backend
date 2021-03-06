@@ -1,16 +1,45 @@
+/* category-routes.js: Functions for the "/api/categories" endpoint. */
+
 const router = require("express").Router();
 const { Category, Product } = require("../../models");
 
-// The `/api/categories` endpoint
-
+// get all categories, including their associated products
 router.get("/", (req, res) => {
-    // find all categories
-    // be sure to include its associated Products
+    Category.findAll({
+        include: [{
+            model: Product,
+            attributes: ["id", "product_name", "price", "stock", "category_id"]
+        }]
+    })
+    .then(dbCategoryData => res.json(dbCategoryData))
+    .catch(err => {
+        console.log(err);
+        res.status(500).json(err);
+    });
 });
 
+// get one category by its id
 router.get("/:id", (req, res) => {
     // find one category by its `id` value
     // be sure to include its associated Products
+    Category.findOne({
+        where: {
+            id: req.params.id
+        },
+        include: [{
+            model: Product,
+            attributes: ["id", "product_name", "price", "stock", "category_id"]
+        }]
+    })
+    .then(dbCategoryData => {
+        if (!dbCategoryData)
+            return res.status(404).json({ message: "No Category found with this id" });
+        res.json(dbCategoryData);
+    })
+    .catch(err => {
+        console.log(err);
+        res.status(500).json(err);
+    });
 });
 
 router.post("/", (req, res) => {
