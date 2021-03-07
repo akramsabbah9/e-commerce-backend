@@ -1,16 +1,43 @@
+/* tag-routes.js: Functions for the "/api/tags" endpoint. */
+
 const router = require("express").Router();
 const { Tag, Product, ProductTag } = require("../../models");
 
-// The `/api/tags` endpoint
-
+// get all tags, including their associated Products
 router.get("/", (req, res) => {
-    // find all tags
-    // be sure to include its associated Product data
+    Tag.findAll({
+        include: [{
+            model: Product,
+            attributes: ["id", "product_name", "price", "stock", "category_id"]
+        }]
+    })
+    .then(dbTagData => res.json(dbTagData))
+    .catch(err => {
+        console.log(err);
+        res.status(500).json(err);
+    });
 });
 
+// get one tag by its id, including its associated Products
 router.get("/:id", (req, res) => {
-    // find a single tag by its `id`
-    // be sure to include its associated Product data
+    Tag.findOne({
+        where: {
+            id: req.params.id
+        },
+        include: [{
+            model: Product,
+            attributes: ["id", "product_name", "price", "stock", "category_id"]
+        }]
+    })
+    .then(dbTagData => {
+        if (!dbTagData)
+            return res.status(404).json({ message: "No tag found with this id" });
+        res.json(dbTagData)
+    })
+    .catch(err => {
+        console.log(err);
+        res.status(500).json(err);
+    });
 });
 
 router.post("/", (req, res) => {
