@@ -53,8 +53,30 @@ router.post("/", (req, res) => {
     });
 });
 
+// update a category by its id
 router.put("/:id", (req, res) => {
-    // update a category by its `id` value
+    // expects {category_name} from req.body
+    Category.update(
+        {
+            category_name: req.body.category_name
+        },
+        {
+            where: {
+                id: req.params.id
+            }
+        }
+    )
+    .then(dbCategoryData => {
+        if (!dbCategoryData[0])
+            return res.status(404).json({
+                message: "No category found with this id, or the category could not be updated"
+            });
+        res.json(dbCategoryData);
+    })
+    .catch(err => {
+        console.log(err);
+        res.status(500).json(err);
+    });
 });
 
 // delete a category by its id
